@@ -187,6 +187,7 @@ def configure_dims(params):
     env = cached_make_env(params['make_env'])
     env.reset()
     obs, _, _, info = env.step(env.action_space.sample())
+    
 
     dims = {
         'o': obs['observation'].shape[0],
@@ -199,3 +200,11 @@ def configure_dims(params):
             value = value.reshape(1)
         dims['info_{}'.format(key)] = value.shape[0]
     return dims
+def get_images(params):
+    env = cached_make_env(params['make_env'])
+    env.reset()
+    return env.get_image()
+def set_rotation(params,rotation):
+    env = cached_make_env(params['make_env'])
+    env.reset()
+    env.set_rotation(rotation)

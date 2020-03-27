@@ -6,14 +6,16 @@ import gym
 from collections import defaultdict
 import tensorflow as tf
 import numpy as np
-
+import cv2
+import math
 from baselines.common.vec_env import VecFrameStack, VecNormalize, VecEnv
 from baselines.common.vec_env.vec_video_recorder import VecVideoRecorder
 from baselines.common.cmd_util import common_arg_parser, parse_unknown_args, make_vec_env, make_env
 from baselines.common.tf_util import get_session
 from baselines import logger
 from importlib import import_module
-
+from baselines.her.get_rect import getRect
+import time
 try:
     from mpi4py import MPI
 except ImportError:
@@ -232,6 +234,19 @@ def main(args):
                 actions, _, state, _ = model.step(obs,S=state, M=dones)
             else:
                 actions, _, _, _ = model.step(obs)
+
+            
+            image=env.get_image()
+            if(image):
+                # print(image[0])
+                img2 = np.array(image[0])
+                angel=getRect(image[0])
+
+                env.set_rotation(angel)
+                
+                # cv2.imshow('frame',image[0])
+                
+                # cv2.waitKey(0)
 
             obs, rew, done, _ = env.step(actions)
             episode_rew += rew

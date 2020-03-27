@@ -49,6 +49,7 @@ def main(policy_file, seed, n_test_rollouts, render):
     # Run evaluation.
     evaluator.clear_history()
     for _ in range(n_test_rollouts):
+        # print('---> hellow')
         evaluator.generate_rollouts()
 
     # record logs

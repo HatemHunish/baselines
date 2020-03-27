@@ -73,7 +73,10 @@ class DummyVecEnv(VecEnv):
 
     def get_images(self):
         return [env.render(mode='rgb_array') for env in self.envs]
-
+    def get_image(self):
+        return self.envs[0].get_image()
+    def set_rotation(self,rotation):
+        self.envs[0].set_rotation(rotation)
     def render(self, mode='human'):
         if self.num_envs == 1:
             return self.envs[0].render(mode=mode)

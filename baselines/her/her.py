@@ -1,16 +1,17 @@
 import os
-
+import matplotlib.pyplot as plt
 import click
 import numpy as np
 import json
 from mpi4py import MPI
-
+import cv2
+import math
 from baselines import logger
 from baselines.common import set_global_seeds, tf_util
 from baselines.common.mpi_moments import mpi_moments
 import baselines.her.experiment.config as config
 from baselines.her.rollout import RolloutWorker
-
+from  baselines.her.get_rect import getRect
 def mpi_average(value):
     if not isinstance(value, list):
         value = [value]
@@ -19,7 +20,7 @@ def mpi_average(value):
     return mpi_moments(np.array(value))[0]
 
 
-def train(*, policy, rollout_worker, evaluator,
+def train(param,*, policy, rollout_worker, evaluator,
           n_epochs, n_test_rollouts, n_cycles, n_batches, policy_save_interval,
           save_path, demo_file, **kwargs):
     rank = MPI.COMM_WORLD.Get_rank()
@@ -39,9 +40,20 @@ def train(*, policy, rollout_worker, evaluator,
         # train
         rollout_worker.clear_history()
         for _ in range(n_cycles):
+            image=config.get_images(param)
+            angel=getRect(image[0])
+            # cv2.imshow('frame',image[0])
+            config.set_rotation(param,angel)
+            # cv2.waitKey(1)
             episode = rollout_worker.generate_rollouts()
+            
+            # plt.imshow(image[0], cmap='gray')
+            # plt.show()
+            # k=cv2.waitKey(10) & 0XFF
             policy.store_episode(episode)
             for _ in range(n_batches):
+
+
                 policy.train()
             policy.update_target_net()
 
@@ -170,7 +182,7 @@ def learn(*, network, env, total_timesteps,
     n_cycles = params['n_cycles']
     n_epochs = total_timesteps // n_cycles // rollout_worker.T // rollout_worker.rollout_batch_size
 
-    return train(
+    return train(params,
         save_path=save_path, policy=policy, rollout_worker=rollout_worker,
         evaluator=evaluator, n_epochs=n_epochs, n_test_rollouts=params['n_test_rollouts'],
         n_cycles=params['n_cycles'], n_batches=params['n_batches'],
